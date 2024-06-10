@@ -6,11 +6,13 @@ use Exception;
 
 class HttpClient
 {
+    
+
     const GET = 'GET';
     const POST = 'POST';
     const DELETE = 'DELETE';
     const PUT = 'PUT';
-
+    const PATCH = 'PATCH';
 
     public $request_headers = [];
     public $request_body = [];
@@ -20,12 +22,10 @@ class HttpClient
     public $response_body = null;
 
     public $options = [
-        CURLOPT_RETURNTRANSFER => 1,
+        CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_HEADER => 1,
         CURLOPT_FOLLOWLOCATION => 1,
-        CURLOPT_FRESH_CONNECT => 1,
-        CURLOPT_FORBID_REUSE => 1
     ];
 
     public $url = null;
@@ -44,15 +44,14 @@ class HttpClient
     public function __construct($timeout = 60)
     {
         if (!extension_loaded('curl')) {
-            throw new Exception('The cURL extensions is not loaded, make sure you have installed the cURL extension: https://php.net/manual/curl.setup.php', 500);
+            throw new Exception('The cURL extensions is not loaded, make sure you have installed the cURL extension: https://php.net/manual/curl.setup.php');
         }
 
         $this->timeOut = $timeout;
 
     }
 
-
-
+ 
     public function setOtp(int $option, $value): void
     {
         $this->options[$option] = $value;
@@ -87,29 +86,25 @@ class HttpClient
         $this->setOtp(CURLOPT_VERBOSE, true);
     }
 
-    public function exec($url, $method, array $queryParams = [] , array $body = [], $asJsonPayload = true) {
+    public function exec($url, $method, $queryParams = [] , $body = [], $asJsonPayload = true) {
         $ch = curl_init();
-        if(!empty($queryParams)) {
+        if(!empty($queryParams) && is_array($queryParams)) {
             $url .= '?' . http_build_query($queryParams);
         }
 
-        if($method == self::POST) {
-            if($asJsonPayload) {
-                $this->prepareJsonPayload($body);
-            }
-            else
-            {
-                $this->preparePayload($body);
-            }
+        if($method == self::POST || $method == self::PUT || $method == self::PATCH) {
+           if($asJsonPayload) {
+            $this->prepareJsonPayload($body);
+           }
+           else
+           {
+            $this->preparePayload($body);
+           }
         }
 
-        $this->method = $method;
-        $this->request_body = $body;
 
         $this->setOtp(CURLOPT_URL , $url);
         $this->setOtp(CURLOPT_TIMEOUT , $this->timeOut);
-
-
 
         foreach ($this->options as $option => $value) {
             curl_setopt($ch, $option, $value);
@@ -131,18 +126,19 @@ class HttpClient
         $sizeHeader = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $this->response_body = substr($this->response, $sizeHeader);
         $this->response_header = trim(substr($this->response, 0, $sizeHeader));
+        $this->method = $method;
+        $this->request_body = $body;
 
         if($this->verbose === true) {
             $curl_log = fopen($this->std_err, 'w');
             curl_setopt($ch, CURLOPT_STDERR, $curl_log);
         }
 
-        curl_close($ch);
+        curl_close($ch);        
     }
 
     protected function prepareJsonPayload(array $data)
     {
-        $this->setOtp(CURLOPT_POST, true);
         $this->setOtp(CURLOPT_POSTFIELDS, json_encode($data));
     }
 
@@ -163,7 +159,7 @@ class HttpClient
         $this->response_body = json_decode($this->response_body);
         return $this->response_body;
     }
-
+    
     public function toJsonHeaders() {
         $response_header = [];
         foreach (explode("\r\n", $this->response_header) as $row) {
@@ -177,7 +173,7 @@ class HttpClient
     }
 
     public function isOk(): bool {
-        return $this->http_status_code >= 200 && $this->http_status_code < 300;
+        return $this->http_status_code >= 200 && $this->http_status_code < 300; 
     }
 
 }
