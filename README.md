@@ -2,9 +2,16 @@
 ## کتابخانه‌ای سبک و قابل توسعه برای ارسال درخواست‌های HTTP با استفاده از cURL در PHP. این ابزار با هدف ساده‌سازی مدیریت درخواست‌ها و پاسخ‌ها
 
 
+
 ```php
-    HttpClient::post($url, $payload, [], ['Content-Type' => 'application/json'], HttpForm::FORMAT_JSON);
+    HttpClient::get($url);
 ```
+
+
+```php
+    HttpClient::post($url,$queryParams, $payload, $headers, HttpForm::FORMAT_JSON);
+```
+
 
 
 
