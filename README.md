@@ -25,7 +25,7 @@
 ```
 
 ```php
-    // Set HttpForm logging (HttpLog)
+    // Set HttpForm log (HttpLog)
     // 'only error' logs only errors (default is true for all logs)
     // 'file_name' specifies the log file to save
     activeLog('only error log default true', 'file name create file')
