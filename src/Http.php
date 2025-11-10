@@ -6,7 +6,8 @@
  * این کلاس امکان ارسال درخواست‌های تکی و چندگانه را فراهم کرده و
  * خطاهای احتمالی cURL را ثبت می‌کند.
  */
-class Http {
+class Http
+{
 
     /**
      * آرایه‌ای برای نگهداری handleهای cURL به همراه فرم‌های مربوطه.
@@ -27,7 +28,8 @@ class Http {
      *
      * @return Http
      */
-    public static function new() {
+    public static function new()
+    {
         return new self();
     }
 
@@ -37,38 +39,33 @@ class Http {
      * @param HttpForm $form شیء HttpForm که شامل اطلاعات درخواست است.
      * @return self
      */
-    public function add(HttpForm $form) {
+    public function add(HttpForm $form)
+    {
 
         $ch = curl_init();
 
-        // تنظیم هدرها
         $headers = [];
         foreach ($form->headers as $header => $value) {
             $headers[] = "{$header}: {$value}";
         }
 
-        // تنظیم URL با Query Parameters
         curl_setopt($ch, CURLOPT_URL, $this->parseUrl($form->url, $form->queryParams));
         curl_setopt($ch, CURLOPT_TIMEOUT, $form->time);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $form->method);
-        
-        // تنظیم ارسال داده در صورت درخواست غیر GET
+
         if ($form->method != HttpForm::METHOD_GET && $form->method != HttpForm::METHOD_DELETE) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $this->parseBody($form->format, $form->payload));
         }
 
-        // اعمال سایر گزینه‌های cURL از آرایه options
         foreach ($form->options as $option => $value) {
             curl_setopt($ch, $option, $value);
         }
 
-        // اگر فرمت داده‌ها فرم دیتا باشد، به صورت POST ارسال می‌شود
         if ($form->format == HttpForm::FORMAT_FORM_DATA) {
             curl_setopt($ch, CURLOPT_POST, true);
         }
 
-        // ثبت handle و فرم مرتبط
         $this->addHandel($ch, $form);
         return $this;
     }
@@ -80,7 +77,8 @@ class Http {
      *
      * @return array|bool آرایه نتیجه یا false در صورت عدم وجود handle.
      */
-    public function run(): array|bool {
+    public function run(): array|bool
+    {
         if (count($this->handles) == 0) return false;
 
         if (count($this->handles) > 1) {
@@ -98,24 +96,21 @@ class Http {
      *
      * @return array آرایه نتایج همراه با فرم‌های مربوطه.
      */
-    private function multiExec(): array {
-        // ایجاد multi handle
+    private function multiExec(): array
+    {
         $mh = curl_multi_init();
         foreach ($this->handles as $handle) {
             curl_multi_add_handle($mh, $handle['curl']);
         }
 
         $active = null;
-        // حلقه‌ی اجرای چندگانه
         do {
-            // اجرای درخواست‌ها
             $exec_status = curl_multi_exec($mh, $active);
             if ($exec_status !== CURLM_OK) {
                 $this->addError('curl_exec_status', 'multi curl: status code: ' . $exec_status);
                 break;
             }
 
-            // استفاده از حلقه داخلی برای بررسی خروجی select در صورت بروز -1
             do {
                 $select_status = curl_multi_select($mh);
                 if ($select_status === -1) {
@@ -123,17 +118,24 @@ class Http {
                     usleep(100); // تاخیر کوتاه برای جلوگیری از busy loop
                 }
             } while ($select_status === -1);
-
         } while ($active > 0);
 
-        // خواندن نتیجه‌ی هر handle و بستن handleها
         $result = [];
         $i = 0;
         while ($info = curl_multi_info_read($mh)) {
             $ch = $info['handle'];
+
+
+            $form = $this->handles[$i]['form'];
+            $result = HttpResult::init($ch, curl_multi_getcontent($ch));
+
+            if ($form->write_log || (!$result->isOk() && $form->write_log_error)) {
+                HttpLog::write($form, $result, $form->log_name_file);
+            }
+
             $result[] = [
-                'form'   => $this->handles[$i]['form'],
-                'result' => HttpResult::init($ch, curl_multi_getcontent($ch)),
+                'form'   => $form,
+                'result' => $result,
             ];
             curl_multi_remove_handle($mh, $ch);
             curl_close($ch);
@@ -150,11 +152,12 @@ class Http {
      *
      * @return array آرایه شامل فرم و نتیجه‌ی درخواست.
      */
-    private function exec() {
+    private function exec()
+    {
         $ch   = $this->handles[0]['curl'];
         $form = $this->handles[0]['form'];
         $res  = curl_exec($ch);
-        
+
         // در صورت نیاز می‌توانید خطاهای curl_exec را نیز ثبت کنید.
 
         // بستن handle
@@ -162,9 +165,16 @@ class Http {
         // پاکسازی آرایه handleها
         $this->handles = [];
 
+
+        $result = HttpResult::init($ch, $res);
+
+        if ($form->write_log || (!$result->isOk() && $form->write_log_error)) {
+            HttpLog::write($form, $result, $form->log_name_file);
+        }
+
         return [
             'form'   => $form,
-            'result' => HttpResult::init($ch, $res)
+            'result' => $result,
         ];
     }
 
@@ -175,7 +185,8 @@ class Http {
      * @param array  $queryParams آرایه پارامترهای کوئری
      * @return string URL نهایی
      */
-    private function parseUrl(string $url, array $queryParams = []) {
+    private function parseUrl(string $url, array $queryParams = [])
+    {
         $urlParts = parse_url($url);
         $query_params = http_build_query($queryParams);
         if (isset($urlParts['query'])) {
@@ -195,7 +206,8 @@ class Http {
      * @param array  $data آرایه داده‌ها
      * @return string محتوای بدنه
      */
-    private function parseBody(string $format, array $data) {
+    private function parseBody(string $format, array $data)
+    {
         if (count($data) == 0) return '';
 
         switch ($format) {
@@ -212,7 +224,8 @@ class Http {
      * @param string $att کلید دسته‌بندی خطا (attribute)
      * @param string $message پیام خطا
      */
-    private function addError(string $att, string $message) {
+    private function addError(string $att, string $message)
+    {
         $this->_errors[$att][] = $message;
     }
 
@@ -221,7 +234,8 @@ class Http {
      *
      * @return array
      */
-    public function errrors() {
+    public function errrors()
+    {
         return $this->_errors;
     }
 
@@ -231,7 +245,8 @@ class Http {
      * @param CurlHandle $ch handle cURL
      * @param HttpForm   $form شیء فرم مربوطه
      */
-    private function addHandel(CurlHandle $ch, HttpForm $form) {
+    private function addHandel(CurlHandle $ch, HttpForm $form)
+    {
         $this->handles[] = [
             'form' => $form,
             'curl' => $ch,
