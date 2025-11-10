@@ -1,6 +1,7 @@
 <?php
 
-class HttpForm {
+class HttpForm
+{
     const METHOD_GET    = 'GET';
     const METHOD_POST   = 'POST';
     const METHOD_DELETE = 'DELETE';
@@ -20,6 +21,10 @@ class HttpForm {
     public $queryParams = [];
     public $format = 'form-data';
 
+    public $write_log = false;
+    public $write_log_error = false;
+    public $log_name_file = '';
+
     public $options = [
         CURLOPT_RETURNTRANSFER => 1,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
@@ -30,8 +35,9 @@ class HttpForm {
     ];
 
 
-    public function url(string $path) {
-        if(!filter_var($path, FILTER_VALIDATE_URL)) {
+    public function url(string $path)
+    {
+        if (!filter_var($path, FILTER_VALIDATE_URL)) {
             throw new InvalidArgumentException(" URL معتبر نیست.");
         }
 
@@ -40,9 +46,22 @@ class HttpForm {
     }
 
 
-    public function method(string $method) {
+    public function activeLog($only_error = true, $name = '')
+    {
+        if ($only_error) {
+            $this->write_log_error = true;
+        } else {
+            $this->write_log = true;
+        }
+
+        $this->log_name_file = $name;
+        return $this;
+    }
+
+    public function method(string $method)
+    {
         $method = strtoupper($method);
-        if(!in_array($method, [self::METHOD_GET, self::METHOD_POST, self::METHOD_PUT, self::METHOD_DELETE, self::METHOD_PATCH])) {
+        if (!in_array($method, [self::METHOD_GET, self::METHOD_POST, self::METHOD_PUT, self::METHOD_DELETE, self::METHOD_PATCH])) {
             throw new InvalidArgumentException(" METHOD معتبر نیست.");
         }
 
@@ -51,61 +70,71 @@ class HttpForm {
     }
 
 
-    public function header(string $name, string $value) {
+    public function header(string $name, string $value)
+    {
         $this->headers[$name] = $value;
         return $this;
     }
 
-    public function headers(array $headers): self {
+    public function headers(array $headers): self
+    {
         foreach ($headers as $name => $value) {
             $this->headers[$name] = $value;
         }
         return $this;
     }
 
-    public function payload(array $payload): self {
+    public function payload(array $payload): self
+    {
         $this->payload = $payload;
         return $this;
     }
 
-    
-    public function addPayload(string $key, $value): self {
+
+    public function addPayload(string $key, $value): self
+    {
         $this->payload[$key] = $value;
         return $this;
     }
-   
-    public function queryParams(array $params): self {
+
+    public function queryParams(array $params): self
+    {
         $this->queryParams = $params;
         return $this;
     }
 
-    public function addQueryParam(string $key, $value): self {
+    public function addQueryParam(string $key, $value): self
+    {
         $this->queryParams[$key] = $value;
         return $this;
     }
 
 
-    public function getHeaders() {
+    public function getHeaders()
+    {
         return $this->headers;
     }
 
-    public function getPayload() {
+    public function getPayload()
+    {
         return $this->payload;
     }
 
-    public function getParams() {
+    public function getParams()
+    {
         return $this->queryParams;
     }
 
 
-    
+
     public function option(int $option, $value): self
     {
         $this->options[$option] = $value;
         return $this;
     }
 
-    public function format(string $format) {
+    public function format(string $format)
+    {
         $this->format = $format;
         return $this;
     }
@@ -126,23 +155,25 @@ class HttpForm {
     }
 
 
-    public function time(int $time) {
+    public function time(int $time)
+    {
         $this->time = $time;
         return $this;
     }
 
-    public function curl() {
+    public function curl()
+    {
         return Http::new()->add($this)->run();
     }
 
-    
 
-    public static function init(string|null $url = null): self {
+
+    public static function init(string|null $url = null): self
+    {
         $model = new self();
 
-        if(!empty($url)) $model->url($url);
+        if (!empty($url)) $model->url($url);
 
         return $model;
     }
-
 }
