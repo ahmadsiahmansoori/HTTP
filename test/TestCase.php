@@ -98,6 +98,6 @@ class TestCase
     }
 }
 
-// var_dump(TestCase::testPost());
-// var_dump(TestCase::testGet());
-var_dump(TestCase::testMultiCurl());
+TestCase::testGet();
+TestCase::testPost();
+TestCase::testMultiCurl();
