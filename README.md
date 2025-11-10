@@ -30,3 +30,13 @@
     // 'file_name' specifies the log file to save
     activeLog('only error log default true', 'file name create file')
 ```
+
+```php
+    // form (HttpForm)
+    return HttpClient::exec(
+        $form,
+        $form,
+        $form,
+        $form
+    );
+```
