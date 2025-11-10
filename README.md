@@ -4,7 +4,7 @@
 
 - Send HTTP Requests Easily
 - Multi-Request Support
-- Smart Logging with HttpLog
+- Smart Log with HttpLog
 - Error Handling
 
 ```php
