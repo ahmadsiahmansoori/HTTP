@@ -1,19 +1,19 @@
 # 🧰 PHP HTTP Client - CURL Wrapper
-## کتابخانه‌ای سبک و قابل توسعه برای ارسال درخواست‌های HTTP با استفاده از cURL در PHP. این ابزار با هدف ساده‌سازی مدیریت درخواست‌ها و پاسخ‌ها
 
+### Features
 
+- Send HTTP Requests Easily
+- Multi-Request Support
+- Smart Logging with HttpLog
+- Error Handling
 
 ```php
     HttpClient::get($url);
 ```
 
-
 ```php
     HttpClient::post($url,$queryParams, $payload, $headers, HttpForm::FORMAT_JSON);
 ```
-
-
-
 
 ```php
     HttpForm::init($url)
@@ -22,4 +22,11 @@
     ->header('Content-Type', 'application/json')
     ->payload($payload)
     ->curl();
+```
+
+```php
+    // Set HttpForm logging (HttpLog)
+    // 'only error' logs only errors (default is true for all logs)
+    // 'file_name' specifies the log file to save
+    activeLog('only error log default true', 'file name create file')
 ```
