@@ -31,6 +31,8 @@
     activeLog('only error log default true', 'file name create file')
 ```
 
+#### Multi-Request
+
 ```php
     // form (HttpForm)
     return HttpClient::exec(
