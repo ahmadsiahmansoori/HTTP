@@ -3,7 +3,7 @@
 class HttpLog
 {
 
-    private static string $base_path = __DIR__ . '/httpClient';
+    private static string $base_path =  '../httpClientLog';
 
 
     public static function write(HttpForm $form, HttpResult $result, string $name = '')
@@ -28,9 +28,9 @@ class HttpLog
 
 
         if (!empty($name)) {
-            $file = $path . '/' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $name) . '.json';
+            $file = $path . '/' . md5(uniqid()) . '&' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $name) . '.json';
         } else {
-            $file = $path . '/' . md5(uniqid()) . $date . '.json';
+            $file = $path . '/' . md5(uniqid()) . '&' . $date . '.json';
         }
 
         $data = [

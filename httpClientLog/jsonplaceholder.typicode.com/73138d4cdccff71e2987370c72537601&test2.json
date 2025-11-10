@@ -1,12 +1,12 @@
 {
-    "datetime": "2025-11-10 13:59:46",
+    "datetime": "2025-11-10 14:14:13",
     "curl": "curl --location  --request GET  'https://jsonplaceholder.typicode.com/users/1'",
     "result": {
         "status": 201,
         "message": "Created",
         "ok": true,
         "ip": "188.114.97.3",
-        "time": 0.607926,
+        "time": 0.595151,
         "size": 65,
         "body": {
             "title": "foo",

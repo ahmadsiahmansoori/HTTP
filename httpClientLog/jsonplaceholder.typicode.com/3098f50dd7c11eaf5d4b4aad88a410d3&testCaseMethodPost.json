@@ -1,0 +1,15 @@
+{
+    "datetime": "2025-11-10 14:14:12",
+    "curl": "curl --location  --request POST  'https://jsonplaceholder.typicode.com/posts?title=foo&body=bar&userId=1'  --header 'Content-Type: application/json'",
+    "result": {
+        "status": 201,
+        "message": "Created",
+        "ok": true,
+        "ip": "188.114.97.3",
+        "time": 0.552432,
+        "size": 15,
+        "body": {
+            "id": 101
+        }
+    }
+}
