@@ -6,7 +6,7 @@ class HttpLog
     private static string $base_path = __DIR__ . '/httpClient'; // مسیر ذخیره لاگ‌ها
 
 
-    public static function log(HttpForm $form, HttpResult $result, string $name = '')
+    public static function write(HttpForm $form, HttpResult $result, string $name = '')
     {
         $curl      = self::stringCurl($form);
         $response  = self::mapperResult($result);
@@ -19,7 +19,7 @@ class HttpLog
     {
 
         $host = parse_url($url, PHP_URL_HOST) ?? 'unknown';
-        $date = date('Y-m-d');
+        $date = date('Y-m-d H:i:s');
         $path = rtrim(self::$base_path, '/') . '/' . $host;
 
         if (!is_dir($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
@@ -30,7 +30,7 @@ class HttpLog
         if (empty($name)) {
             $file = $path . '/' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $name) . '.json';
         } else {
-            $file = $path . '/' . $date . '|' . time() . '.json';
+            $file = $path . '/' . $date . '.json';
         }
 
         $data = [
