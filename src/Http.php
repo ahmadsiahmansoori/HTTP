@@ -127,15 +127,15 @@ class Http
 
 
             $form = $this->handles[$i]['form'];
-            $result = HttpResult::init($ch, curl_multi_getcontent($ch));
+            $httpResult = HttpResult::init($ch, curl_multi_getcontent($ch));
 
-            if ($form->write_log || (!$result->isOk() && $form->write_log_error)) {
-                HttpLog::write($form, $result, $form->log_name_file);
+            if ($form->write_log || (!$httpResult->isOk() && $form->write_log_error)) {
+                HttpLog::write($form, $httpResult, $form->log_name_file);
             }
 
             $result[] = [
                 'form'   => $form,
-                'result' => $result,
+                'result' => $httpResult,
             ];
             curl_multi_remove_handle($mh, $ch);
             curl_close($ch);

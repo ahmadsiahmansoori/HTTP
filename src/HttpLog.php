@@ -3,7 +3,7 @@
 class HttpLog
 {
 
-    private static string $base_path = __DIR__ . '/httpClient'; // مسیر ذخیره لاگ‌ها
+    private static string $base_path = __DIR__ . '/httpClient';
 
 
     public static function write(HttpForm $form, HttpResult $result, string $name = '')
@@ -19,7 +19,7 @@ class HttpLog
     {
 
         $host = parse_url($url, PHP_URL_HOST) ?? 'unknown';
-        $date = date('Y-m-d H:i:s');
+        $date = date('Y-m-d_H-i-s');
         $path = rtrim(self::$base_path, '/') . '/' . $host;
 
         if (!is_dir($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
@@ -27,10 +27,10 @@ class HttpLog
         }
 
 
-        if (empty($name)) {
+        if (!empty($name)) {
             $file = $path . '/' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $name) . '.json';
         } else {
-            $file = $path . '/' . $date . '.json';
+            $file = $path . '/' . md5(uniqid()) . $date . '.json';
         }
 
         $data = [
@@ -39,8 +39,7 @@ class HttpLog
             'result' => $result
         ];
 
-        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        $json .= PHP_EOL . str_repeat('-', 80) . PHP_EOL;
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         return file_put_contents($file, $json, FILE_APPEND | LOCK_EX) !== false;
     }
@@ -55,9 +54,6 @@ class HttpLog
             'ip' => $result->ip,
             'time' => $result->time,
             'size' => $result->size,
-            'timings' => $result->timings,
-            'headers' => $result->getHeaders(),
-            'cookies' => $result->getCookies(),
             'body' => $result->body
         ];
     }
@@ -66,31 +62,40 @@ class HttpLog
     public static function stringCurl(HttpForm $form): string
     {
         $url = $form->url;
+
+        // ساخت QueryString
         if (!empty($form->queryParams)) {
             $query = http_build_query($form->queryParams);
             $url .= (str_contains($url, '?') ? '&' : '?') . $query;
         }
 
-        $headerStr = '';
+        // هدرها
+        $headers = [];
         foreach ($form->headers as $key => $value) {
-            $headerStr .= " --header '" . addslashes($key) . ": " . addslashes($value) . "'";
+            $headers[] = "--header '" . str_replace("'", "'\"'\"'", "{$key}: {$value}") . "'";
         }
 
+        // payload
         $dataStr = '';
         if (!in_array(strtoupper($form->method), [HttpForm::METHOD_GET, HttpForm::METHOD_DELETE]) && !empty($form->payload)) {
             if ($form->format === HttpForm::FORMAT_JSON) {
-                $jsonPayload = json_encode($form->payload, JSON_UNESCAPED_UNICODE);
-                $dataStr = " --data '" . addslashes($jsonPayload) . "'";
+                $jsonPayload = json_encode($form->payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                $dataStr = "--data '" . str_replace("'", "'\"'\"'", $jsonPayload) . "'";
             } else {
                 $formPayload = http_build_query($form->payload);
-                $dataStr = " --data '" . addslashes($formPayload) . "'";
+                $dataStr = "--data '" . str_replace("'", "'\"'\"'", $formPayload) . "'";
             }
         }
 
-        $curl = "curl --location --request " . strtoupper($form->method) . " '" . $url . "' \\" . PHP_EOL
-            . $headerStr
-            . $dataStr;
+        // مونتاژ نهایی با newline واقعی
+        $parts = ["curl --location", "--request " . strtoupper($form->method), "'{$url}'"];
+        if (!empty($headers)) {
+            $parts = array_merge($parts, $headers);
+        }
+        if (!empty($dataStr)) {
+            $parts[] = $dataStr;
+        }
 
-        return $curl;
+        return implode('  ', $parts);
     }
 }

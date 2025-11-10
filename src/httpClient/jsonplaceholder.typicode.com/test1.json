@@ -1,0 +1,18 @@
+{
+    "datetime": "2025-11-10 13:59:46",
+    "curl": "curl --location  --request GET  'https://jsonplaceholder.typicode.com/posts/1'",
+    "result": {
+        "status": 200,
+        "message": "OK",
+        "ok": true,
+        "ip": "188.114.97.3",
+        "time": 0.576124,
+        "size": 83,
+        "body": {
+            "userId": 1,
+            "id": 1,
+            "title": "delectus aut autem",
+            "completed": false
+        }
+    }
+}
