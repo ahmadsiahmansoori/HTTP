@@ -1,5 +1,6 @@
 # 🧰 PHP HTTP Client - CURL Wrapper
 
+### version support PHP 8.0+
 ### Features
 
 - Send HTTP Requests Easily

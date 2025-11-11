@@ -26,10 +26,15 @@ class HttpResult
      * @param string|false $res
      * @return self
      */
-    public static function init(CurlHandle $ch, string|bool $res)
+    public static function init(CurlHandle $ch, string|bool $res, HttpForm $form = null)
     {
         $init = new self();
         $init->parse($ch, $res);
+
+        if ($form &&  ($form->write_log || (!$init->isOk() && $form->write_log_error))) {
+            HttpLog::write($form, $init, $form->log_name_file);
+        }
+            
         return $init;
     }
 

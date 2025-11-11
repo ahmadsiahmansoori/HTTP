@@ -98,14 +98,8 @@ class TestCase
     }
 }
 
-TestCase::testGet();
-TestCase::testPost();
-TestCase::testMultiCurl();
+print_r(TestCase::testMultiCurl());
 
-
+echo PHP_EOL;
 $url = "https://darman-admin.alborzinsurance.ir/v2/auth";
-HttpClient::get($url, [], [], true);
-HttpClient::get($url, [], [], true);
-HttpClient::get($url, [], [], true);
-HttpClient::get($url, [], [], true);
-HttpClient::get($url, [], [], true);
+print_r(HttpClient::get($url, [], [], true));

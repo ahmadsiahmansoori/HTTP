@@ -77,7 +77,7 @@ class Http
      *
      * @return array|bool آرایه نتیجه یا false در صورت عدم وجود handle.
      */
-    public function run(): array|bool
+    public function run()
     {
         if (count($this->handles) == 0) return false;
 
@@ -127,16 +127,11 @@ class Http
 
 
             $form = $this->handles[$i]['form'];
-            $httpResult = HttpResult::init($ch, curl_multi_getcontent($ch));
+            $httpResult = HttpResult::init($ch, curl_multi_getcontent($ch), $form);
 
-            if ($form->write_log || (!$httpResult->isOk() && $form->write_log_error)) {
-                HttpLog::write($form, $httpResult, $form->log_name_file);
-            }
+           
 
-            $result[] = [
-                'form'   => $form,
-                'result' => $httpResult,
-            ];
+            $result[] = $httpResult;
             curl_multi_remove_handle($mh, $ch);
             curl_close($ch);
             $i++;
@@ -166,16 +161,10 @@ class Http
         $this->handles = [];
 
 
-        $result = HttpResult::init($ch, $res);
+        $result = HttpResult::init($ch, $res, $form);
 
-        if ($form->write_log || (!$result->isOk() && $form->write_log_error)) {
-            HttpLog::write($form, $result, $form->log_name_file);
-        }
 
-        return [
-            'form'   => $form,
-            'result' => $result,
-        ];
+        return $result;
     }
 
     /**
