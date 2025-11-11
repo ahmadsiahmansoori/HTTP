@@ -9,7 +9,7 @@ class HttpLog
     /**
      * @var int number of log files used for rotation. Defaults to 10.
      */
-    private static int $maxLogFiles = 5;
+    private static int $maxLogFiles = 10;
 
 
 
@@ -100,18 +100,18 @@ class HttpLog
 
     private static function createDirectory(string $path, int $mode = 0775): bool {
 
-    $normalizedPath = rtrim($path, '/');
+        $normalizedPath = rtrim($path, '/');
 
-    if (is_dir($normalizedPath)) {
-        return true;
+        if (is_dir($normalizedPath)) {
+            return true;
+        }
+
+        if (!mkdir($normalizedPath, $mode, true) && !is_dir($normalizedPath)) {
+            return false;
+        }
+
+        return chmod($normalizedPath, $mode);
     }
-
-    if (!mkdir($normalizedPath, $mode, true) && !is_dir($normalizedPath)) {
-        return false;
-    }
-
-    return chmod($normalizedPath, $mode);
-}
 
 
 
