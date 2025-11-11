@@ -1,6 +1,6 @@
 <?php
-
-class HttpResult {
+class HttpResult
+{
 
     public $body;
     public $status;
@@ -26,9 +26,10 @@ class HttpResult {
      * @param string|false $res
      * @return self
      */
-    public static function init(CurlHandle $ch, string|bool $res) {
+    public static function init(CurlHandle $ch, string|bool $res)
+    {
         $init = new self();
-        $init->parse($ch,$res);
+        $init->parse($ch, $res);
         return $init;
     }
 
@@ -40,8 +41,9 @@ class HttpResult {
      * @param string|false $res
      * @return void
      */
-    private function parse(CurlHandle $ch, string|bool $res) {
-        
+    private function parse(CurlHandle $ch, string|bool $res)
+    {
+
         $this->status  =  (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->time    =  (float) curl_getinfo($ch, CURLINFO_TOTAL_TIME);
         $this->ip      =  (string) curl_getinfo($ch, CURLINFO_PRIMARY_IP);
@@ -50,7 +52,7 @@ class HttpResult {
         $this->timings = [
             'namelookup'   => (float) curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
             'connect'      => (float) curl_getinfo($ch, CURLINFO_CONNECT_TIME),
-            'starttransfer'=> (float) curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
+            'starttransfer' => (float) curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
         ];
 
 
@@ -68,7 +70,6 @@ class HttpResult {
             $this->body    = $this->parseBody($bodyPart);
             $this->message = self::statusText($this->status);
         }
-
     }
 
 
@@ -79,19 +80,46 @@ class HttpResult {
     private static function statusText(int $code): string
     {
         static $texts = [
-            100 => 'Continue', 101 => 'Switching Protocols',
-            200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information',
-            204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content',
-            300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found',
-            303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 307 => 'Temporary Redirect',
-            400 => 'Bad Request', 401 => 'Unauthorized', 402 => 'Payment Required', 403 => 'Forbidden',
-            404 => 'Not Found', 405 => 'Method Not Allowed', 406 => 'Not Acceptable',
-            407 => 'Proxy Authentication Required', 408 => 'Request Timeout', 409 => 'Conflict',
-            410 => 'Gone', 411 => 'Length Required', 412 => 'Precondition Failed',
-            413 => 'Payload Too Large', 414 => 'URI Too Long', 415 => 'Unsupported Media Type',
-            416 => 'Range Not Satisfiable', 417 => 'Expectation Failed',
-            500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway',
-            503 => 'Service Unavailable', 504 => 'Gateway Timeout', 505 => 'HTTP Version Not Supported'
+            100 => 'Continue',
+            101 => 'Switching Protocols',
+            200 => 'OK',
+            201 => 'Created',
+            202 => 'Accepted',
+            203 => 'Non-Authoritative Information',
+            204 => 'No Content',
+            205 => 'Reset Content',
+            206 => 'Partial Content',
+            300 => 'Multiple Choices',
+            301 => 'Moved Permanently',
+            302 => 'Found',
+            303 => 'See Other',
+            304 => 'Not Modified',
+            305 => 'Use Proxy',
+            307 => 'Temporary Redirect',
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            402 => 'Payment Required',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            405 => 'Method Not Allowed',
+            406 => 'Not Acceptable',
+            407 => 'Proxy Authentication Required',
+            408 => 'Request Timeout',
+            409 => 'Conflict',
+            410 => 'Gone',
+            411 => 'Length Required',
+            412 => 'Precondition Failed',
+            413 => 'Payload Too Large',
+            414 => 'URI Too Long',
+            415 => 'Unsupported Media Type',
+            416 => 'Range Not Satisfiable',
+            417 => 'Expectation Failed',
+            500 => 'Internal Server Error',
+            501 => 'Not Implemented',
+            502 => 'Bad Gateway',
+            503 => 'Service Unavailable',
+            504 => 'Gateway Timeout',
+            505 => 'HTTP Version Not Supported'
         ];
         return $texts[$code] ?? 'Unknown Status';
     }
@@ -103,7 +131,8 @@ class HttpResult {
      * @param CurlHandle $ch
      * @return string
      */
-    private function parseErrorMessage(CurlHandle $ch) {
+    private function parseErrorMessage(CurlHandle $ch)
+    {
         $message = curl_error($ch);
         $code    = curl_errno($ch);
         $errorMap = [
@@ -123,9 +152,8 @@ class HttpResult {
         if ($message === '' && isset($errorMap[$code])) {
             return $errorMap[$code];
         }
-        
-        return $message !== '' ? $message : "خطای ناشناخته cURL (کد: {$code})";
 
+        return $message !== '' ? $message : "خطای ناشناخته cURL (کد: {$code})";
     }
 
 
@@ -135,7 +163,8 @@ class HttpResult {
      * @param string $header
      * @return array<string,string[]>
      */
-    private function parseHeader(string $header): array {
+    private function parseHeader(string $header): array
+    {
 
         $lines = preg_split("/\r?\n/", trim($header));
         $result = [];
@@ -155,7 +184,8 @@ class HttpResult {
      *
      * @return array<string,string>
      */
-    private function parseCookies(): array {
+    private function parseCookies(): array
+    {
         $cookies = [];
         $setCookies = $this->headers['set-cookie'] ?? [];
         foreach ($setCookies as $cookieHeader) {
@@ -169,7 +199,7 @@ class HttpResult {
         }
         return $cookies;
     }
-    
+
 
     /**
      * دیکد بدنه بر اساس Content-Type
@@ -177,8 +207,9 @@ class HttpResult {
      * @param string $result
      * @return mixed|string
      */
-    private function parseBody(string $result) {
-        
+    private function parseBody(string $result)
+    {
+
         $contentTypes = $this->headers['content-type'] ?? [];
         foreach ($contentTypes as $ct) {
             if (stripos($ct, 'application/json') !== false) {
@@ -238,5 +269,4 @@ class HttpResult {
     {
         return $this->timings;
     }
-
 }

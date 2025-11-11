@@ -101,3 +101,11 @@ class TestCase
 TestCase::testGet();
 TestCase::testPost();
 TestCase::testMultiCurl();
+
+
+$url = "https://darman-admin.alborzinsurance.ir/v2/auth";
+HttpClient::get($url, [], [], true);
+HttpClient::get($url, [], [], true);
+HttpClient::get($url, [], [], true);
+HttpClient::get($url, [], [], true);
+HttpClient::get($url, [], [], true);

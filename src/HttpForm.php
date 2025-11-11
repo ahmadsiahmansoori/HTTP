@@ -1,5 +1,4 @@
 <?php
-
 class HttpForm
 {
     const METHOD_GET    = 'GET';
